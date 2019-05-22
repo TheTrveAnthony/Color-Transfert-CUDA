@@ -21,7 +21,7 @@ __global__ void make_up(float* ipt, float* opt, const float *mean_t,
 __global__ void channel_mean(float* tabz, float* meanz, int width, int height, int step);
 
 __global__ void channel_std(float* tabz, float* stdz, float* meanz, int width, int height, int step);
-
 */
+
 
 #endif

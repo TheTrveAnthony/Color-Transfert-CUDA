@@ -7,9 +7,10 @@
 #include "function.h"
 #include "matrix.h"
 
-#define TAB 500000		
 #define C 3
- 
+#define TAB 4096 // This is the whole shared memory avaiable for my GPU (4096*3 bytes), you can raise it
+				 // if yours has a compute capability higher than 3.0
+
  
 using namespace std; //::cout
 //using namespace std::endl;
@@ -22,6 +23,8 @@ const float *r_l;
 const float *l_a;
 const float *a_l;
 const float *l_r;
+
+
 
 
 __global__ void rgb2alpha(unsigned char* ipt, float* opt, const float *rgb_l, const float *l_alpha, int width, int height, int step){
@@ -228,6 +231,7 @@ __global__ void channel_std(float* tabz, float* stdz, float* meanz, int width, i
 
 }
 
+
 void transfert(string nom1, string nom2){
 
 	/////////// First of all let's load the images we'll use
@@ -275,7 +279,7 @@ void transfert(string nom1, string nom2){
 
 	// We are ready for the conversion now
 
-	rgb2alpha<<<grid_t, block>>>(gpu_target, target_a, r_l, l_a, target.cols, target_a.rows, target.step);
+	rgb2alpha<<<grid_t, block>>>(gpu_target, target_a, r_l, l_a, target.cols, target.rows, target.step);
 	rgb2alpha<<<grid_s, block>>>(gpu_source, source_a, r_l, l_a, source.cols, source.rows, source.step);
 
 	// Free The Memory !!!!!
@@ -299,10 +303,10 @@ void transfert(string nom1, string nom2){
 
 	// Ready for computations
 
-	channel_mean<<<grid_t, block>>>(target_a, mean_target, target.cols, target_a.rows, target.step);
+	channel_mean<<<grid_t, block>>>(target_a, mean_target, target.cols, target.rows, target.step);
 	channel_mean<<<grid_s, block>>>(source_a, mean_source, source.cols, source.rows, source.step);
 
-	channel_std<<<grid_t, block>>>(target_a, std_target, mean_target, target.cols, target_a.rows, target.step);
+	channel_std<<<grid_t, block>>>(target_a, std_target, mean_target, target.cols, target.rows, target.step);
 	channel_std<<<grid_s, block>>>(source_a, std_source, mean_source, source.cols, source.rows, source.step);
 
 	cudaFree(source_a);		// We don't need it no more
@@ -312,7 +316,7 @@ void transfert(string nom1, string nom2){
 	float *result_a;
 	cudaMalloc((void **)&result_a, size_target_f);
 
-	make_up<<<grid_t, block>>>(target_a, result_a, mean_target, mean_source, std_target, std_source, target.cols, target_a.rows, target.step);
+	make_up<<<grid_t, block>>>(target_a, result_a, mean_target, mean_source, std_target, std_source, target.cols, target.rows, target.step);
 
 	// Now let's throw away what we don't need no more
 
@@ -329,15 +333,15 @@ void transfert(string nom1, string nom2){
 	unsigned char *gpu_result;
 	cudaMalloc((void **)&gpu_result, size_target);
 
-	alpha2rgb<<<grid_t, block>>>(result_a, gpu_result, a_l, l_r, target.cols, target_a.rows, target.step);
+	alpha2rgb<<<grid_t, block>>>(result_a, gpu_result, a_l, l_r, target.cols, target.rows, target.step);
 
 	cudaFree(result_a);
 
 	// Now our actual result
 
 	Mat result(target.rows, target.cols, CV_8UC3);
-	cudaMemcpyHostToDevice(result.ptr(), gpu_result, size_target, cudaMemcpyDeviceToHost);
-
+	cudaMemcpy(result.ptr(), gpu_result, size_target, cudaMemcpyDeviceToHost);
+	
 	cudaFree(gpu_result);
 
 	///////////////// Now the easy part //////////
