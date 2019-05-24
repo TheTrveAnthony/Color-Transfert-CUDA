@@ -2,9 +2,13 @@
 #define PLUS_H_INCLUDED
 
 using namespace std;
+//using namespace cv;
 
 // Called by CPU :
 void transfert(string nom1, string nom2);
+//void channel_mean(float* tabz, float* meanz, int width, int height, int step);
+//void channel_std(float* tabz, float *stdz, float* meanz, const int width, const int height, const int step);
+//void tooBig(Mat& img);
 
 /*
 // CAlled by GPU :
