@@ -9,14 +9,7 @@
 #include "function.h"
 
 
-#define C 3
-#define TAB 4096 // This is the whole shared memory avaiable for my GPU (4096*3 bytes), you can raise it
-				 // if yours has a compute capability higher than 3.0
-#define XX 50000000
-
-using namespace std; //::cout
-//using namespace std::endl;
-//using namespace std::string;
+using namespace std; 
 using namespace cv;
 
 
@@ -244,8 +237,8 @@ void transfert(string nom1, string nom2){
 
 	unsigned char *gpu_target, *gpu_source;
 
-	cudaMalloc((unsigned char **)&gpu_target, size_target);
-	cudaMalloc((unsigned char **)&gpu_source, size_source);
+	cudaMalloc((void **)&gpu_target, size_target);
+	cudaMalloc((void **)&gpu_source, size_source);
 
 	cudaMemcpy(gpu_target, target.ptr(), size_target, cudaMemcpyHostToDevice);
 	cudaMemcpy(gpu_source, source.ptr(), size_source, cudaMemcpyHostToDevice);
@@ -254,8 +247,8 @@ void transfert(string nom1, string nom2){
 
 	float *target_a, *source_a ;
 
-	cudaMalloc((float **)&target_a, size_target_f);
-	cudaMalloc((float **)&source_a, size_source_f);
+	cudaMalloc((void **)&target_a, size_target_f);
+	cudaMalloc((void **)&source_a, size_source_f);
 
 	// We are ready for the conversion now
 
